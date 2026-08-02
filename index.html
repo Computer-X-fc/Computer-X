@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title> Computer X</title>
+<title>Computer X</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{
@@ -27,7 +27,8 @@ const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 let w,h;
 let particles = [];
-const particleCount = 1600;
+// 【修改1】增加粒子总量
+const particleCount = 3200;
 let animateState = 0; // 0散乱 1汇聚ComputerX
 const duration = 5000; // 5秒完成汇聚
 let startTime = 0;
@@ -55,7 +56,8 @@ function createTargetPoints(){
 
     const img = tctx.getImageData(0,0,w,h);
     const points = [];
-    const step = 6;
+    // 【修改2】缩小采样步长，点阵更精细，推荐3~4
+    const step = 3;
     for(let y=0;y<h;y+=step){
         for(let x=0;x<w;x+=step){
             const i = (y*w+x)*4;
@@ -80,7 +82,8 @@ class Particle{
         this.y = Math.random()*h;
         this.baseX = this.x;
         this.baseY = this.y;
-        this.r = Math.random()*1.8+0.6;
+        //【修改3】粒子尺寸缩小
+        this.r = Math.random()*1.0 + 0.3;
     }
     setTarget(px,py){
         this.tx = px;
