@@ -20,7 +20,6 @@ canvas{display:block;width:100vw;height:100vh;touch-action:none;cursor:pointer;}
 </style>
 </head>
 <body>
-<div class="tip">点击屏幕任意位置 → 粒子汇聚 Computer X（电脑模式）</div>
 <canvas id="canvas"></canvas>
 
 <script>
@@ -45,7 +44,7 @@ window.addEventListener('resize',resize);
 function createTargetPoints(){
     const tempCanvas = document.createElement('canvas');
     const tctx = tempCanvas.getContext('2d');
-    const size = Math.min(w,h)*0.42;
+    const size = Math.min(w,h)*0.21;
     tempCanvas.width = w;
     tempCanvas.height = h;
     tctx.fillStyle="#fff";
