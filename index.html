@@ -1,36 +1,153 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Computer X</title>
-    <style>
-        *{
-            margin: 0;
-            padding: 0;
-        }
-        body{
-            background: #f5f5f5;
-            font-family: system-ui;
-            text-align: center;
-            padding-top: 50px;
-        }
-        h1{
-            color:#2277dd;
-            margin-bottom:10px;
-        }
-        p{
-            color:#555;
-            font-size:20px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title> Computer X</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{
+    width:100%;height:100%;
+    background:#080812;
+    overflow:hidden;
+}
+canvas{display:block;width:100vw;height:100vh;touch-action:none;cursor:pointer;}
+.tip{
+    position:fixed;top:24px;left:50%;transform:translateX(-50%);
+    color:#fff;opacity:0.7;font-size:15px;text-align:center;
+    pointer-events:none;font-family:system-ui;
+}
+</style>
 </head>
 <body>
-    <h1>部署成功</h1>
-    <div style="height: 25px;"></div>
-    <p>GitHub + Cloudflare Pages</p >
-    <div style="height: 350px;"></div>
-    联系我们：<br>
-    Hello-Computer-X@outlook.com
+<div class="tip">点击屏幕任意位置 → 粒子汇聚 Computer X（电脑模式）</div>
+<canvas id="canvas"></canvas>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let w,h;
+let particles = [];
+const particleCount = 1600;
+let animateState = 0; // 0散乱 1汇聚ComputerX
+const duration = 5000; // 5秒完成汇聚
+let startTime = 0;
+
+// 重置画布尺寸
+function resize(){
+    w = canvas.width = innerWidth;
+    h = canvas.height = innerHeight;
+}
+resize();
+window.addEventListener('resize',resize);
+
+// ========== 生成 Computer X 文字点阵 ==========
+function createTargetPoints(){
+    const tempCanvas = document.createElement('canvas');
+    const tctx = tempCanvas.getContext('2d');
+    const size = Math.min(w,h)*0.42;
+    tempCanvas.width = w;
+    tempCanvas.height = h;
+    tctx.fillStyle="#fff";
+    tctx.font = `bold ${size}px Arial,sans-serif`;
+    tctx.textAlign="center";
+    tctx.textBaseline="middle";
+    tctx.fillText("Computer X",w/2,h/2);
+
+    const img = tctx.getImageData(0,0,w,h);
+    const points = [];
+    const step = 6;
+    for(let y=0;y<h;y+=step){
+        for(let x=0;x<w;x+=step){
+            const i = (y*w+x)*4;
+            if(img.data[i+3]>80){
+                points.push({x,y});
+            }
+        }
+    }
+    return points;
+}
+const targetPoints = createTargetPoints();
+
+// 创建粒子
+class Particle{
+    constructor(){
+        this.resetRandom();
+        this.tx = 0;
+        this.ty = 0;
+    }
+    resetRandom(){
+        this.x = Math.random()*w;
+        this.y = Math.random()*h;
+        this.baseX = this.x;
+        this.baseY = this.y;
+        this.r = Math.random()*1.8+0.6;
+    }
+    setTarget(px,py){
+        this.tx = px;
+        this.ty = py;
+    }
+    update(progress){
+        if(animateState===1){
+            this.x = this.baseX + (this.tx - this.baseX)*progress;
+            this.y = this.baseY + (this.ty - this.baseY)*progress;
+        }
+    }
+    draw(){
+        ctx.beginPath();
+        ctx.arc(this.x,this.y,this.r,0,Math.PI*2);
+        ctx.fillStyle = `rgba(110, 190, 255, ${animateState?0.9:0.5})`;
+        ctx.fill();
+    }
+}
+
+// 初始化粒子池
+function initParticles(){
+    particles = [];
+    for(let i=0;i<particleCount;i++){
+        particles.push(new Particle());
+    }
+    // 分配目标点位
+    for(let i=0;i<particles.length;i++){
+        const p = particles[i];
+        const t = targetPoints[i%targetPoints.length];
+        p.setTarget(t.x,t.y);
+    }
+}
+initParticles();
+
+// 点击/触摸触发动画（电脑+平板通用）
+canvas.addEventListener('click', triggerSwitch);
+canvas.addEventListener('touchstart', (e)=>{
+    e.preventDefault();
+    triggerSwitch();
+});
+
+// 触发电脑模式切换动画
+function triggerSwitch(){
+    if(animateState !== 1){
+        animateState = 1;
+        startTime = performance.now();
+    }
+}
+
+// 渲染循环
+function render(time){
+    ctx.fillStyle = 'rgba(8,8,18,0.18)';
+    ctx.fillRect(0,0,w,h);
+
+    let progress = 0;
+    if(animateState===1){
+        progress = Math.min(1, (time - startTime)/duration);
+    }
+
+    for(let p of particles){
+        p.update(progress);
+        p.draw();
+    }
+    requestAnimationFrame(render);
+}
+requestAnimationFrame(render);
+</script>
 </body>
 </html>
