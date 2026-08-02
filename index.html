@@ -52,7 +52,7 @@ function createTargetPoints(){
     tctx.font = `bold ${size}px Arial,sans-serif`;
     tctx.textAlign="center";
     tctx.textBaseline="middle";
-    tctx.fillText("Computer X",w/2,h/2);
+    tctx.fillText("Computer X",w/2,h/4);
 
     const img = tctx.getImageData(0,0,w,h);
     const points = [];
@@ -62,7 +62,13 @@ function createTargetPoints(){
         for(let x=0;x<w;x+=step){
             const i = (y*w+x)*4;
             if(img.data[i+3]>80){
-                points.push({x,y});
+                // ±3~6像素随机偏移，数值越大越散乱
+                const offset = 5;
+                points.push({
+                x: x + (Math.random() - 0.5) * offset,
+                y: y + (Math.random() - 0.5) * offset
+});
+
             }
         }
     }
